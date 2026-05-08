@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamKranti — Mock Test Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --primary: #1a1f5e;
+    --primary-light: #2d3494;
+    --accent: #f97316;
+    --accent2: #06b6d4;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --bg: #f0f2ff;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* ===== TOP NAV ===== */
+  .topnav {
+    background:var(--primary);
+    padding:0 24px;
+    height:56px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:fixed; top:0; left:0; right:0; z-index:1000;
+    box-shadow:0 2px 12px rgba(26,31,94,0.3);
+  }
+  .logo { font-family:'Baloo 2',cursive; font-size:22px; font-weight:800; color:#fff; letter-spacing:0.5px; }
+  .logo span { color:var(--accent); }
+  .nav-right { display:flex; align-items:center; gap:16px; }
+  .nav-btn { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:6px 16px; border-radius:20px; cursor:pointer; font-size:13px; font-weight:500; transition:all 0.2s; }
+  .nav-btn:hover { background:rgba(255,255,255,0.2); }
+  .nav-btn.admin { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .nav-btn.admin:hover { background:#ea6c0a; }
+
+  /* ===== VIEWS ===== */
+  .view { display:none; padding-top:56px; min-height:100vh; }
+  .view.active { display:block; }
+
+  /* ===== ADMIN LOGIN MODAL ===== */
+  .login-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.7);
+    display:flex; align-items:center; justify-content:center;
+    z-index:9998; display:none;
+  }
+  .login-overlay.show { display:flex; }
+  .login-box {
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:20px;
+    padding:40px;
+    width:380px;
+    max-width:95vw;
+    text-align:center;
+    box-shadow:0 24px 64px rgba(0,0,0,0.5);
+  }
+  .login-box .lock-icon { font-size:40px; margin-bottom:12px; }
+  .login-box h2 { font-family:'Baloo 2',cursive; font-size:22px; color:#f1f5f9; margin-bottom:6px; }
+  .login-box p { color:#94a3b8; font-size:13px; margin-bottom:24px; }
+  .login-input {
+    width:100%; background:#0f172a; border:1px solid #334155;
+    color:#f1f5f9; padding:12px 16px; border-radius:10px;
+    font-size:14px; margin-bottom:14px; font-family:'Noto Sans',sans-serif;
+    outline:none; transition:border-color 0.2s;
+  }
+  .login-input:focus { border-color:#60a5fa; }
+  .login-btn {
+    width:100%; background:#2563eb; color:#fff; border:none;
+    padding:12px; border-radius:10px; font-size:15px; font-weight:700;
+    cursor:pointer; font-family:'Noto Sans',sans-serif; margin-bottom:10px;
+    transition:background 0.2s;
+  }
+  .login-btn:hover { background:#1d4ed8; }
+  .login-cancel {
+    background:transparent; border:1px solid #334155; color:#94a3b8;
+    padding:10px; border-radius:10px; font-size:13px; cursor:pointer;
+    width:100%; font-family:'Noto Sans',sans-serif;
+  }
+  .login-error { color:#f87171; font-size:13px; margin-bottom:12px; display:none; }
+  .login-error.show { display:block; }
+
+  /* ===== LANGUAGE TOGGLE ===== */
+  .lang-toggle {
+    display:flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,0.1);
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:20px; padding:4px;
+  }
+  .lang-btn {
+    padding:3px 10px; border-radius:16px; font-size:12px; font-weight:600;
+    cursor:pointer; color:rgba(255,255,255,0.6); border:none; background:transparent;
+    transition:all 0.2s;
+  }
+  .lang-btn.active { background:#fff; color:var(--primary); }
+
+  /* ===== HOME VIEW ===== */
+  .hero {
+    background:linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 60%, #1e4d8c 100%);
+    padding:60px 24px 80px;
+    text-align:center;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before {
+    content:'';
+    position:absolute; top:-60px; right:-80px;
+    width:350px; height:350px;
+    border-radius:50%;
+    background:rgba(249,115,22,0.15);
+  }
+  .hero::after {
+    content:'';
+    position:absolute; bottom:-40px; left:-60px;
+    width:250px; height:250px;
+    border-radius:50%;
+    background:rgba(6,182,212,0.12);
+  }
+  .hero h1 { font-family:'Baloo 2',cursive; font-size:38px; font-weight:800; margin-bottom:8px; position:relative; z-index:1; }
+  .hero h1 .hi { display:block; font-size:22px; opacity:0.85; font-weight:600; margin-bottom:4px; }
+  .hero p { font-size:16px; color:rgba(255,255,255,0.8); max-width:540px; margin:0 auto 6px; position:relative; z-index:1; }
+  .hero p.sub { font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:28px; }
+  .hero-stats { display:flex; justify-content:center; gap:40px; position:relative; z-index:1; }
+  .stat-item { text-align:center; }
+  .stat-num { font-family:'Baloo 2',cursive; font-size:28px; font-weight:800; color:var(--accent); }
+  .stat-lbl { font-size:12px; color:rgba(255,255,255,0.7); }
+
+  .modules-section { padding:40px 24px; max-width:1100px; margin:0 auto; }
+  .section-title { font-family:'Baloo 2',cursive; font-size:22px; font-weight:700; color:var(--primary); margin-bottom:2px; }
+  .section-title .title-hi { display:block; font-size:13px; color:var(--muted); font-weight:500; font-family:'Noto Sans',sans-serif; }
+  .section-sub { color:var(--muted); font-size:14px; margin-bottom:24px; }
+  .modules-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+
+  .module-card {
+    background:var(--card);
+    border-radius:16px;
+    border:1.5px solid var(--border);
+    overflow:hidden;
+    cursor:pointer;
+    transition:all 0.25s;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  }
+  .module-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(26,31,94,0.15); border-color:var(--primary-light); }
+  .module-banner { height:8px; }
+  .module-body { padding:20px; }
+  .module-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:12px; }
+  .module-title { font-family:'Baloo 2',cursive; font-size:18px; font-weight:700; margin-bottom:2px; }
+  .module-title .m-hi { display:block; font-size:12px; color:var(--muted); font-weight:500; font-family:'Noto Sans',sans-serif; }
+  .module-desc { font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.5; }
+  .module-meta { display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+  .meta-tag { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:500; display:flex; align-items:center; gap:4px; }
+  .module-footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid var(--border); }
+  .start-btn {
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:8px 20px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s;
+    font-family:'Noto Sans',sans-serif;
+  }
+  .start-btn:hover { background:var(--primary-light); transform:scale(1.03); }
+  .exam-count { font-size:12px; color:var(--muted); }
+
+  .m-bsf .module-banner { background:linear-gradient(90deg,#1a1f5e,#2563eb); }
+  .m-bsf .module-icon { background:#eff6ff; color:#2563eb; }
+  .m-bsf .start-btn { background:#2563eb; }
+  .m-bsf .start-btn:hover { background:#1d4ed8; }
+
+  .m-joa .module-banner { background:linear-gradient(90deg,#0e7490,#06b6d4); }
+  .m-joa .module-icon { background:#ecfeff; color:#0e7490; }
+  .m-joa .start-btn { background:#0e7490; }
+  .m-joa .start-btn:hover { background:#0a5f75; }
+
+  .m-ssc .module-banner { background:linear-gradient(90deg,#b45309,#f97316); }
+  .m-ssc .module-icon { background:#fff7ed; color:#f97316; }
+  .m-ssc .start-btn { background:#f97316; }
+  .m-ssc .start-btn:hover { background:#ea6c0a; }
+
+  .m-physics .module-banner { background:linear-gradient(90deg,#7c3aed,#a855f7); }
+  .m-physics .module-icon { background:#faf5ff; color:#7c3aed; }
+  .m-physics .start-btn { background:#7c3aed; }
+  .m-physics .start-btn:hover { background:#6d28d9; }
+
+  .badge-q { background:#eff6ff; color:#1e40af; }
+  .badge-t { background:#f0fdf4; color:#166534; }
+  .badge-d { background:#fff7ed; color:#9a3412; }
+
+  /* ===== EXAM SELECTION VIEW ===== */
+  #view-exams { background:var(--bg); }
+  .exam-header { padding:24px; background:var(--card); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; }
+  .back-btn { background:var(--bg); border:1.5px solid var(--border); color:var(--text); padding:7px 14px; border-radius:8px; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px; font-family:'Noto Sans',sans-serif; }
+  .back-btn:hover { background:#e2e8f0; }
+  .exam-header-title { font-family:'Baloo 2',cursive; font-size:20px; font-weight:700; }
+
+  .exams-list { padding:24px; max-width:900px; margin:0 auto; }
+  .exam-item {
+    background:var(--card);
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    padding:18px 22px;
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .exam-item:hover { border-color:var(--primary-light); box-shadow:0 4px 16px rgba(26,31,94,0.1); }
+  .exam-item-left { display:flex; align-items:center; gap:14px; }
+  .exam-num { width:36px; height:36px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:var(--primary); }
+  .exam-name { font-weight:600; font-size:15px; margin-bottom:2px; }
+  .exam-info { font-size:12px; color:var(--muted); }
+  .exam-start { background:var(--primary); color:#fff; border:none; padding:8px 18px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans',sans-serif; }
+  .exam-start:hover { background:var(--primary-light); }
+
+  /* ===== TEST VIEW ===== */
+  #view-test { background:#f8faff; }
+  .test-topbar {
+    position:fixed; top:56px; left:0; right:0; z-index:100;
+    background:var(--card);
+    border-bottom:1.5px solid var(--border);
+    padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .test-title-bar { font-family:'Baloo 2',cursive; font-size:16px; font-weight:700; }
+  .timer-box {
+    display:flex; align-items:center; gap:8px;
+    background:var(--primary);
+    color:#fff;
+    padding:6px 16px;
+    border-radius:20px;
+    font-weight:700;
+    font-size:16px;
+    font-family:'Baloo 2',cursive;
+  }
+  .timer-box.danger { background:var(--danger); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+  .submit-test-btn { background:var(--success); color:#fff; border:none; padding:8px 20px; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Noto Sans',sans-serif; }
+  .submit-test-btn:hover { background:#16a34a; }
+
+  .test-body {
+    display:flex;
+    padding-top:112px;
+    min-height:100vh;
+  }
+  .test-main {
+    flex:1;
+    padding:24px;
+    max-width:780px;
+    margin:0 auto;
+  }
+
+  .q-card {
+    background:var(--card);
+    border-radius:16px;
+    border:1.5px solid var(--border);
+    padding:28px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
+  }
+  .q-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .q-badge { font-size:12px; color:var(--muted); background:var(--bg); padding:4px 12px; border-radius:20px; border:1px solid var(--border); }
+  .q-marks { font-size:12px; }
+  .q-marks .pos { color:var(--success); font-weight:600; }
+  .q-marks .neg { color:var(--danger); font-weight:600; }
+
+  /* Bilingual question */
+  .q-text {
+    font-size:16px; line-height:1.7; color:var(--text);
+    margin-bottom:24px; font-weight:500;
+  }
+  .q-text .q-hindi { display:block; font-size:16px; }
+  .q-text .q-english {
+    display:block; font-size:13px; color:var(--muted);
+    font-weight:400; margin-top:4px; padding-top:6px;
+    border-top:1px dashed var(--border);
+    font-style:italic;
+  }
+
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:13px 16px;
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    cursor:pointer;
+    transition:all 0.15s;
+    background:var(--card);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .option:hover { background:#f0f4ff; border-color:#93a8d8; }
+  .option.selected { background:#eff6ff; border-color:#2563eb; }
+  .option.correct { background:#f0fdf4; border-color:#22c55e; }
+  .option.wrong { background:#fef2f2; border-color:#ef4444; }
+  .option-key {
+    width:26px; height:26px; min-width:26px;
+    border-radius:50%;
+    background:var(--bg);
+    border:1.5px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:600; color:var(--muted);
+    transition:all 0.15s;
+  }
+  .option.selected .option-key { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .option.correct .option-key { background:var(--success); color:#fff; border-color:var(--success); }
+  .option.wrong .option-key { background:var(--danger); color:#fff; border-color:var(--danger); }
+  .option-text { flex:1; padding-top:3px; }
+  .opt-hi { display:block; }
+  .opt-en { display:block; font-size:11px; color:var(--muted); font-style:italic; margin-top:1px; }
+
+  .q-nav-btns {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:22px;
+    gap:12px;
+  }
+  .q-action-btns { display:flex; gap:10px; }
+  .nav-btn2 { padding:9px 20px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--card); font-family:'Noto Sans',sans-serif; transition:all 0.15s; }
+  .nav-btn2:hover { background:var(--bg); }
+  .nav-btn2.primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .nav-btn2.primary:hover { background:var(--primary-light); }
+  .nav-btn2.mark { background:#fef9c3; color:#854d0e; border-color:#fde047; }
+
+  /* Question panel */
+  .q-panel {
+    width:260px;
+    background:var(--card);
+    border-left:1.5px solid var(--border);
+    padding:16px;
+    overflow-y:auto;
+    height:calc(100vh - 112px);
+    position:sticky; top:112px;
+  }
+  .q-panel-title { font-family:'Baloo 2',cursive; font-size:15px; font-weight:700; margin-bottom:10px; }
+  .q-legend { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+  .legend-dot { width:12px; height:12px; border-radius:3px; }
+  .q-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+  .q-num {
+    width:32px; height:32px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:600; cursor:pointer;
+    background:var(--bg);
+    color:var(--muted);
+    border:1.5px solid var(--border);
+    transition:all 0.15s;
+  }
+  .q-num:hover { border-color:var(--primary); }
+  .q-num.current { border-color:var(--primary); background:var(--primary); color:#fff; }
+  .q-num.answered { background:#22c55e; color:#fff; border-color:#22c55e; }
+  .q-num.marked { background:#a855f7; color:#fff; border-color:#a855f7; }
+  .q-num.not-visited { background:#e2e8f0; color:#94a3b8; border-color:#e2e8f0; }
+
+  /* ===== RESULT VIEW ===== */
+  #view-result { background:var(--bg); }
+  .result-wrap { max-width:900px; margin:0 auto; padding:32px 24px; }
+  .result-hero {
+    background:linear-gradient(135deg,var(--primary),var(--primary-light));
+    border-radius:20px;
+    padding:36px;
+    color:#fff;
+    text-align:center;
+    margin-bottom:28px;
+  }
+  .result-hero h2 { font-family:'Baloo 2',cursive; font-size:28px; font-weight:800; margin-bottom:6px; }
+  .result-hero p { font-size:14px; opacity:0.8; }
+  .score-ring {
+    width:130px; height:130px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    border:4px solid rgba(255,255,255,0.4);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    margin:20px auto;
+  }
+  .score-pct { font-family:'Baloo 2',cursive; font-size:36px; font-weight:800; }
+  .score-lbl { font-size:12px; opacity:0.8; }
+  .result-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:28px; }
+  .result-stat {
+    background:var(--card);
+    border-radius:12px;
+    padding:18px;
+    text-align:center;
+    border:1.5px solid var(--border);
+  }
+  .result-stat .num { font-family:'Baloo 2',cursive; font-size:26px; font-weight:800; }
+  .result-stat .lbl { font-size:12px; color:var(--muted); margin-top:2px; }
+  .result-stat .lbl .lbl-en { display:block; font-size:10px; opacity:0.7; }
+  .num.green { color:var(--success); }
+  .num.red { color:var(--danger); }
+  .num.orange { color:var(--warning); }
+
+  .review-section { background:var(--card); border-radius:16px; padding:24px; border:1.5px solid var(--border); margin-bottom:20px; }
+  .review-title { font-family:'Baloo 2',cursive; font-size:18px; font-weight:700; margin-bottom:18px; }
+  .review-item { border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:16px; }
+  .review-item:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .review-q-num { font-size:12px; font-weight:600; color:var(--primary); margin-bottom:6px; }
+  .review-q-text { font-size:14px; margin-bottom:10px; line-height:1.6; }
+  .review-q-text .q-en { font-size:12px; color:var(--muted); font-style:italic; display:block; }
+  .review-options { display:flex; flex-direction:column; gap:6px; }
+  .review-option { font-size:13px; padding:6px 12px; border-radius:8px; border:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .review-option.correct { background:#f0fdf4; border-color:#22c55e; color:#166534; }
+  .review-option.wrong { background:#fef2f2; border-color:#ef4444; color:#991b1b; }
+  .review-option .ri { font-size:12px; }
+  .result-actions { display:flex; gap:14px; justify-content:center; margin-top:24px; flex-wrap:wrap; }
+  .result-btn { padding:11px 26px; border-radius:20px; font-size:14px; font-weight:600; cursor:pointer; border:none; font-family:'Noto Sans',sans-serif; }
+  .result-btn.primary { background:var(--primary); color:#fff; }
+  .result-btn.secondary { background:var(--card); color:var(--text); border:1.5px solid var(--border); }
+  .result-btn:hover { opacity:0.9; transform:scale(1.02); transition:all 0.15s; }
+
+  /* ===== ADMIN VIEW ===== */
+  #view-admin { background:#0f172a; color:#f1f5f9; min-height:100vh; }
+  .admin-layout { display:flex; padding-top:0; }
+  .admin-sidebar {
+    width:220px;
+    min-height:calc(100vh - 56px);
+    background:#1e293b;
+    border-right:1px solid #334155;
+    padding:20px 0;
+    position:sticky;
+    top:56px;
+  }
+  .admin-nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 20px;
+    color:#94a3b8;
+    cursor:pointer;
+    font-size:14px;
+    transition:all 0.15s;
+    border-left:3px solid transparent;
+  }
+  .admin-nav-item:hover { color:#f1f5f9; background:rgba(255,255,255,0.05); }
+  .admin-nav-item.active { color:#60a5fa; border-left-color:#60a5fa; background:rgba(96,165,250,0.08); }
+  .admin-content { flex:1; padding:28px; overflow-y:auto; }
+  .admin-card {
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:22px;
+  }
+  .admin-card-title { font-family:'Baloo 2',cursive; font-size:18px; font-weight:700; color:#f1f5f9; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+  .admin-label { font-size:13px; color:#94a3b8; margin-bottom:6px; font-weight:500; }
+  .admin-input, .admin-select, .admin-textarea {
+    width:100%;
+    background:#0f172a;
+    border:1px solid #334155;
+    color:#f1f5f9;
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:14px;
+    margin-bottom:14px;
+    font-family:'Noto Sans',sans-serif;
+  }
+  .admin-input:focus, .admin-select:focus, .admin-textarea:focus { outline:none; border-color:#60a5fa; }
+  .admin-textarea { min-height:100px; resize:vertical; }
+  .admin-btn { padding:9px 22px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:none; font-family:'Noto Sans',sans-serif; }
+  .admin-btn.primary { background:#2563eb; color:#fff; }
+  .admin-btn.primary:hover { background:#1d4ed8; }
+  .admin-btn.success { background:#22c55e; color:#fff; }
+  .admin-btn.danger { background:#ef4444; color:#fff; }
+
+  .upload-zone {
+    border:2px dashed #334155;
+    border-radius:12px;
+    padding:36px;
+    text-align:center;
+    cursor:pointer;
+    transition:all 0.2s;
+    margin-bottom:16px;
+  }
+  .upload-zone:hover { border-color:#60a5fa; background:rgba(96,165,250,0.05); }
+  .upload-zone i { font-size:40px; color:#475569; margin-bottom:10px; display:block; }
+  .upload-zone p { color:#94a3b8; font-size:14px; }
+  .upload-zone strong { color:#60a5fa; }
+
+  .admin-table { width:100%; border-collapse:collapse; font-size:14px; }
+  .admin-table th { text-align:left; padding:10px 14px; color:#94a3b8; font-size:12px; font-weight:600; border-bottom:1px solid #334155; }
+  .admin-table td { padding:12px 14px; border-bottom:1px solid #1e293b; color:#e2e8f0; }
+  .admin-table tr:hover td { background:rgba(255,255,255,0.03); }
+  .status-pill { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:600; }
+  .status-pill.active { background:#14532d; color:#4ade80; }
+  .status-pill.draft { background:#44403c; color:#fbbf24; }
+  .mini-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
+  .mini-stat { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:16px; }
+  .mini-stat .n { font-family:'Baloo 2',cursive; font-size:24px; font-weight:800; color:#60a5fa; }
+  .mini-stat .l { font-size:12px; color:#94a3b8; margin-top:2px; }
+
+  .processing-overlay {
+    position:fixed; inset:0; background:rgba(15,23,42,0.9);
+    flex-direction:column; align-items:center; justify-content:center;
+    z-index:9999; display:none;
+  }
+  .processing-overlay.show { display:flex; }
+  .spinner { width:50px; height:50px; border:4px solid #334155; border-top-color:#60a5fa; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:16px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .processing-text { color:#f1f5f9; font-size:16px; font-weight:500; }
+  .processing-sub { color:#94a3b8; font-size:13px; margin-top:6px; }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position:fixed; bottom:24px; right:24px;
+    background:#1e293b; color:#f1f5f9;
+    padding:12px 20px; border-radius:10px;
+    font-size:14px; font-weight:500;
+    box-shadow:0 8px 24px rgba(0,0,0,0.3);
+    z-index:9999;
+    transform:translateY(80px); opacity:0;
+    transition:all 0.3s;
+    display:flex; align-items:center; gap:10px;
+    border-left:4px solid var(--success);
+  }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast.error { border-left-color:var(--danger); }
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width:768px) {
+    .test-body { flex-direction:column; }
+    .q-panel { width:100%; height:auto; position:static; border-left:none; border-top:1.5px solid var(--border); }
+    .hero h1 { font-size:26px; }
+    .hero-stats { gap:20px; }
+    .mini-stats { grid-template-columns:repeat(2,1fr); }
+    .admin-sidebar { display:none; }
+  }
+
+  .pdf-preview {
+    background:#0f172a; border:1px solid #334155; border-radius:8px;
+    padding:16px; margin-top:14px; max-height:200px; overflow-y:auto;
+  }
+  .pdf-q-item { border-bottom:1px solid #1e293b; padding:8px 0; font-size:13px; color:#94a3b8; }
+  .pdf-q-item strong { color:#60a5fa; }
+
+  .admin-tabs { display:flex; gap:0; border-bottom:1px solid #334155; margin-bottom:22px; }
+  .admin-tab { padding:10px 18px; color:#94a3b8; cursor:pointer; font-size:14px; border-bottom:2px solid transparent; transition:all 0.15s; }
+  .admin-tab.active { color:#60a5fa; border-bottom-color:#60a5fa; }
+
+  /* Admin logout button */
+  .admin-logout-btn {
+    margin:12px 12px 0;
+    display:flex; align-items:center; gap:8px;
+    padding:8px 16px; border-radius:8px;
+    background:#ef444420; border:1px solid #ef444440;
+    color:#f87171; font-size:13px; cursor:pointer;
+    transition:all 0.15s; width:calc(100% - 24px);
+  }
+  .admin-logout-btn:hover { background:#ef444430; }
+
+  input[type=file] { display:none; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="logo">Exam<span>Kranti</span></div>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btn-hi" onclick="setLang('hi')">हिं</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="nav-btn" onclick="showView('home')"><i class="fa fa-home"></i> Home</button>
+    <button class="nav-btn admin" onclick="openAdminLogin()"><i class="fa fa-lock"></i> Admin</button>
+  </div>
+</nav>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="lock-icon">🔐</div>
+    <h2>Admin Login</h2>
+    <p>Enter your credentials to access the admin panel<br><span style="font-size:11px;color:#475569">एडमिन पैनल में प्रवेश करने के लिए क्रेडेंशियल दर्ज करें</span></p>
+    <div class="login-error" id="login-error"><i class="fa fa-exclamation-triangle"></i> Invalid ID or Password / गलत ID या पासवर्ड</div>
+    <input class="login-input" id="login-id" type="text" placeholder="Admin ID (एडमिन आईडी)" />
+    <input class="login-input" id="login-pass" type="password" placeholder="Password (पासवर्ड)" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()"><i class="fa fa-sign-in-alt"></i> Login / प्रवेश करें</button>
+    <button class="login-cancel" onclick="closeLogin()">Cancel / रद्द करें</button>
+  </div>
+</div>
+
+<!-- ===== HOME VIEW ===== -->
+<div id="view-home" class="view active">
+  <div class="hero">
+    <h1>
+      <span class="hi" id="hero-hi">🎯 सरकारी परीक्षा की तैयारी करें</span>
+      Crack Your Government Exam
+    </h1>
+    <p id="hero-p">BSF, JOA IT, SSC GD और अन्य परीक्षाओं के लिए Full Mock Tests दें — साथ में Detailed Solutions और Analytics</p>
+    <p class="sub">Attempt full-length mock tests for BSF, JOA IT, SSC GD and more — with detailed solutions and analytics.</p>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num" id="total-q-count">150+</div><div class="stat-lbl">प्रश्न / Questions</div></div>
+      <div class="stat-item"><div class="stat-num">4</div><div class="stat-lbl">मॉड्यूल / Modules</div></div>
+      <div class="stat-item"><div class="stat-num">Free</div><div class="stat-lbl">अभ्यास / Practice</div></div>
+    </div>
+  </div>
+
+  <div class="modules-section">
+    <div class="section-title">📚 Test Modules <span class="title-hi">परीक्षा मॉड्यूल</span></div>
+    <div class="section-sub">Select a module to start practicing / अभ्यास शुरू करने के लिए मॉड्यूल चुनें</div>
+    <div class="modules-grid" id="modules-grid"></div>
+  </div>
+</div>
+
+<!-- ===== EXAM SELECTION VIEW ===== -->
+<div id="view-exams" class="view">
+  <div class="exam-header">
+    <button class="back-btn" onclick="showView('home')"><i class="fa fa-arrow-left"></i> Back / वापस</button>
+    <div>
+      <div class="exam-header-title" id="exam-module-title">BSF Mock Tests</div>
+      <div style="font-size:13px;color:var(--muted)" id="exam-module-sub">Choose a mock test to attempt / एक टेस्ट चुनें</div>
+    </div>
+  </div>
+  <div class="exams-list" id="exams-list"></div>
+</div>
+
+<!-- ===== TEST VIEW ===== -->
+<div id="view-test" class="view">
+  <div class="test-topbar">
+    <div class="test-title-bar" id="test-title">Mock Test</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="timer-box" id="timer-box"><i class="fa fa-clock"></i> <span id="timer-display">45:00</span></div>
+      <button class="submit-test-btn" onclick="submitTest()"><i class="fa fa-paper-plane"></i> Submit / जमा करें</button>
+    </div>
+  </div>
+
+  <div class="test-body">
+    <div class="test-main">
+      <div class="q-card">
+        <div class="q-meta">
+          <span class="q-badge" id="q-badge">Question 1 of 30</span>
+          <div class="q-marks"><span class="pos">+4</span> &nbsp;|&nbsp; <span class="neg">-1</span></div>
+        </div>
+        <div class="q-text" id="q-text">Loading question...</div>
+        <div class="options" id="options-container"></div>
+        <div class="q-nav-btns">
+          <button class="nav-btn2" onclick="prevQ()"><i class="fa fa-arrow-left"></i> Previous / पिछला</button>
+          <div class="q-action-btns">
+            <button class="nav-btn2 mark" onclick="markForReview()"><i class="fa fa-bookmark"></i> Mark / चिह्नित</button>
+            <button class="nav-btn2 primary" onclick="nextQ()">Next / अगला <i class="fa fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-panel">
+      <div class="q-panel-title">Question Navigator / प्रश्न नेविगेटर</div>
+      <div class="q-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Answered</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0;border:1px solid #cbd5e1"></div>Not visited</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Marked</div>
+      </div>
+      <div class="q-grid" id="q-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT VIEW ===== -->
+<div id="view-result" class="view">
+  <div class="result-wrap">
+    <div class="result-hero">
+      <h2 id="result-title">Test Completed! 🎉</h2>
+      <p id="result-subtitle">Mock Test</p>
+      <div class="score-ring">
+        <div class="score-pct" id="score-pct">0%</div>
+        <div class="score-lbl">Score / स्कोर</div>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-stat"><div class="num green" id="res-correct">0</div><div class="lbl">सही / Correct</div></div>
+      <div class="result-stat"><div class="num red" id="res-wrong">0</div><div class="lbl">गलत / Wrong</div></div>
+      <div class="result-stat"><div class="num orange" id="res-skipped">0</div><div class="lbl">छोड़े / Skipped</div></div>
+      <div class="result-stat"><div class="num" id="res-score">0</div><div class="lbl">स्कोर (+4/-1)</div></div>
+      <div class="result-stat"><div class="num" id="res-accuracy">0%</div><div class="lbl">सटीकता / Accuracy</div></div>
+      <div class="result-stat"><div class="num" id="res-time">—</div><div class="lbl">समय / Time</div></div>
+    </div>
+
+    <div class="review-section">
+      <div class="review-title">📋 Question Review / प्रश्न समीक्षा</div>
+      <div id="review-container"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="result-btn primary" onclick="retakeTest()"><i class="fa fa-redo"></i> Retake / दोबारा दें</button>
+      <button class="result-btn secondary" onclick="showView('home')"><i class="fa fa-home"></i> Home / होम</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN VIEW ===== -->
+<div id="view-admin" class="view">
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div class="admin-nav-item active" id="anav-0" onclick="adminTab('dashboard')"><i class="fa fa-chart-bar"></i> Dashboard</div>
+      <div class="admin-nav-item" id="anav-1" onclick="adminTab('add-questions')"><i class="fa fa-plus-circle"></i> Add Questions</div>
+      <div class="admin-nav-item" id="anav-2" onclick="adminTab('upload-pdf')"><i class="fa fa-file-pdf"></i> Upload PDF</div>
+      <div class="admin-nav-item" id="anav-3" onclick="adminTab('manage')"><i class="fa fa-cog"></i> Manage Modules</div>
+      <button class="admin-logout-btn" onclick="adminLogout()"><i class="fa fa-sign-out-alt"></i> Logout / लॉगआउट</button>
+    </div>
+    <div class="admin-content">
+
+      <!-- Dashboard -->
+      <div id="admin-dashboard">
+        <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:20px;">⚡ Admin Dashboard</div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="n" id="adm-total-q">0</div><div class="l">Total Questions / कुल प्रश्न</div></div>
+          <div class="mini-stat"><div class="n" id="adm-total-m">4</div><div class="l">Modules / मॉड्यूल</div></div>
+          <div class="mini-stat"><div class="n" id="adm-total-t">0</div><div class="l">Mock Tests / टेस्ट</div></div>
+          <div class="mini-stat"><div class="n">Free</div><div class="l">Platform / प्लेटफॉर्म</div></div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title"><i class="fa fa-layer-group"></i> Modules Overview</div>
+          <table class="admin-table" id="modules-overview-table">
+            <thead><tr><th>Module</th><th>Questions</th><th>Mock Tests</th><th>Status</th></tr></thead>
+            <tbody id="module-overview-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add Questions -->
+      <div id="admin-add-questions" style="display:none">
+        <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:20px;">➕ Add Questions / प्रश्न जोड़ें</div>
+        <div class="admin-card">
+          <div class="admin-card-title"><i class="fa fa-edit"></i> Add New Question</div>
+          <div class="admin-label">Module / मॉड्यूल</div>
+          <select class="admin-select" id="aq-module">
+            <option value="physics">Physics GK (SSC/General)</option>
+            <option value="bsf">BSF Mock Test</option>
+            <option value="joa">JOA IT Mock Test</option>
+            <option value="sscgd">SSC GD Mock Test</option>
+          </select>
+          <div class="admin-label">Question Text Hindi / प्रश्न (हिंदी)</div>
+          <textarea class="admin-textarea" id="aq-text" placeholder="हिंदी में प्रश्न लिखें..."></textarea>
+          <div class="admin-label">Question Text English (Optional)</div>
+          <textarea class="admin-textarea" id="aq-text-en" placeholder="Enter question in English (optional)..." style="min-height:60px"></textarea>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div class="admin-label">Option A (हिंदी)</div>
+              <input class="admin-input" id="aq-a" type="text" placeholder="Option A Hindi" />
+              <input class="admin-input" id="aq-a-en" type="text" placeholder="Option A English (optional)" />
+            </div>
+            <div>
+              <div class="admin-label">Option B (हिंदी)</div>
+              <input class="admin-input" id="aq-b" type="text" placeholder="Option B Hindi" />
+              <input class="admin-input" id="aq-b-en" type="text" placeholder="Option B English (optional)" />
+            </div>
+            <div>
+              <div class="admin-label">Option C (हिंदी)</div>
+              <input class="admin-input" id="aq-c" type="text" placeholder="Option C Hindi" />
+              <input class="admin-input" id="aq-c-en" type="text" placeholder="Option C English (optional)" />
+            </div>
+            <div>
+              <div class="admin-label">Option D (हिंदी)</div>
+              <input class="admin-input" id="aq-d" type="text" placeholder="Option D Hindi" />
+              <input class="admin-input" id="aq-d-en" type="text" placeholder="Option D English (optional)" />
+            </div>
+          </div>
+          <div class="admin-label">Correct Answer / सही उत्तर</div>
+          <select class="admin-select" id="aq-correct">
+            <option value="0">A</option><option value="1">B</option>
+            <option value="2">C</option><option value="3">D</option>
+          </select>
+          <div class="admin-label">Explanation / व्याख्या (Optional)</div>
+          <textarea class="admin-textarea" id="aq-explanation" placeholder="Explain the correct answer..." style="min-height:70px"></textarea>
+          <button class="admin-btn primary" onclick="addQuestionManually()"><i class="fa fa-plus"></i> Add Question / प्रश्न जोड़ें</button>
+        </div>
+      </div>
+
+      <!-- Upload PDF -->
+      <div id="admin-upload-pdf" style="display:none">
+        <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:20px;">📄 Upload PDF & Extract Questions</div>
+        <div class="admin-card">
+          <div class="admin-card-title"><i class="fa fa-file-upload"></i> PDF Upload (AI Extraction)</div>
+          <div class="admin-label">Target Module</div>
+          <select class="admin-select" id="pdf-module">
+            <option value="physics">Physics GK</option>
+            <option value="bsf">BSF Mock Test</option>
+            <option value="joa">JOA IT Mock Test</option>
+            <option value="sscgd">SSC GD Mock Test</option>
+          </select>
+          <div class="upload-zone" onclick="document.getElementById('pdf-input').click()">
+            <i class="fa fa-cloud-upload-alt"></i>
+            <p>Drag & drop PDF or <strong>click to browse</strong></p>
+            <p style="font-size:12px;margin-top:6px">MCQ-format PDFs work best (like Parmar SSC notes)</p>
+          </div>
+          <input type="file" id="pdf-input" accept=".pdf" onchange="handlePDFUpload(this)" />
+          <div id="pdf-upload-status" style="display:none">
+            <div style="background:#0a3d2b;border:1px solid #166534;border-radius:8px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+              <i class="fa fa-check-circle" style="color:#22c55e;font-size:18px"></i>
+              <div>
+                <div style="color:#4ade80;font-size:14px;font-weight:600" id="pdf-filename">file.pdf uploaded</div>
+                <div style="color:#6ee7b7;font-size:12px">Ready to extract questions using AI</div>
+              </div>
+            </div>
+            <button class="admin-btn success" onclick="extractFromPDF()" id="extract-btn"><i class="fa fa-magic"></i> Extract Questions with AI</button>
+          </div>
+          <div id="pdf-preview" style="display:none">
+            <div style="color:#94a3b8;font-size:13px;margin:12px 0 6px">Extracted Questions Preview:</div>
+            <div class="pdf-preview" id="pdf-preview-content"></div>
+            <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+              <button class="admin-btn primary" onclick="savePDFQuestions()" id="save-pdf-btn"><i class="fa fa-save"></i> Save All Questions</button>
+              <span style="color:#94a3b8;font-size:13px" id="extracted-count">0 questions extracted</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage Modules -->
+      <div id="admin-manage" style="display:none">
+        <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:20px;">⚙️ Manage Modules / मॉड्यूल प्रबंधन</div>
+        <div class="admin-card">
+          <div class="admin-card-title"><i class="fa fa-plus"></i> Create New Module</div>
+          <div class="admin-label">Module Name / मॉड्यूल नाम</div>
+          <input class="admin-input" id="new-module-name" placeholder="e.g. HPPSC Exam" />
+          <div class="admin-label">Description / विवरण</div>
+          <input class="admin-input" id="new-module-desc" placeholder="Short description" />
+          <div class="admin-label">Color Theme</div>
+          <select class="admin-select" id="new-module-color">
+            <option value="blue">Blue (BSF style)</option>
+            <option value="teal">Teal (JOA style)</option>
+            <option value="orange">Orange (SSC style)</option>
+            <option value="purple">Purple (Physics style)</option>
+          </select>
+          <button class="admin-btn primary" onclick="createModule()"><i class="fa fa-plus"></i> Create Module</button>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title"><i class="fa fa-list"></i> All Modules</div>
+          <table class="admin-table">
+            <thead><tr><th>Module</th><th>Questions</th><th>Actions</th></tr></thead>
+            <tbody id="manage-modules-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Processing Overlay -->
+<div class="processing-overlay" id="processing-overlay">
+  <div class="spinner"></div>
+  <div class="processing-text" id="processing-text">Extracting questions from PDF...</div>
+  <div class="processing-sub" id="processing-sub">Using Claude AI to parse MCQ content</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fa fa-check-circle"></i> <span id="toast-text">Done!</span></div>
+
+<script>
+// ============================
+// ADMIN AUTH
+// ============================
+const ADMIN_ID = 'sam123';
+const ADMIN_PASS = 'sam123';
+let isAdminLoggedIn = false;
+
+function openAdminLogin() {
+  if(isAdminLoggedIn) { showView('admin'); return; }
+  document.getElementById('login-overlay').classList.add('show');
+  document.getElementById('login-id').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').classList.remove('show');
+  setTimeout(() => document.getElementById('login-id').focus(), 100);
+}
+
+function closeLogin() {
+  document.getElementById('login-overlay').classList.remove('show');
+}
+
+function doLogin() {
+  const id = document.getElementById('login-id').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if(id === ADMIN_ID && pass === ADMIN_PASS) {
+    isAdminLoggedIn = true;
+    closeLogin();
+    showView('admin');
+    showToast('Welcome, Admin! / स्वागत है एडमिन!');
+  } else {
+    document.getElementById('login-error').classList.add('show');
+    document.getElementById('login-pass').value='';
+  }
+}
+
+function adminLogout() {
+  isAdminLoggedIn = false;
+  showView('home');
+  showToast('Logged out / लॉगआउट हो गए');
+}
+
+// ============================
+// LANGUAGE TOGGLE
+// ============================
+let currentLang = 'hi'; // 'hi' = bilingual (Hindi + English), 'en' = English only
+
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btn-hi').classList.toggle('active', lang==='hi');
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+  // Re-render question if in test
+  if(document.getElementById('view-test').classList.contains('active')) {
+    renderQuestion();
+  }
+}
+
+// ============================
+// DATA STORE
+// ============================
+const store = {
+  modules: [
+    {
+      id:'physics', name:'Physics GK', icon:'⚛️',
+      desc:'गति, बल, प्रकाश, ध्वनि, विद्युत — Parmar SSC Notes से। SSC CGL/CHSL/MTS के लिए परफेक्ट। (Motion, Forces, Light, Sound, Electricity)',
+      color:'physics', questions:[], exams:[],
+      tags:['30 Questions','45 Min','SSC Level']
+    },
+    {
+      id:'bsf', name:'BSF Mock Test', icon:'🛡️',
+      desc:'सीमा सुरक्षा बल भर्ती के लिए Mock Tests — GK, Reasoning, Maths, Hindi & English. (Border Security Force recruitment mock tests)',
+      color:'bsf', questions:[], exams:[],
+      tags:['100 Questions','120 Min','BSF Level']
+    },
+    {
+      id:'joa', name:'JOA IT Mock Test', icon:'💻',
+      desc:'Junior Office Assistant (IT) — MS Office, Computer Basics, Reasoning, English. कंप्यूटर आधारित परीक्षा।',
+      color:'joa', questions:[], exams:[],
+      tags:['85 Questions','90 Min','JOA Level']
+    },
+    {
+      id:'sscgd', name:'SSC GD Mock Test', icon:'🏛️',
+      desc:'SSC GD Constable परीक्षा — GK, Maths, Reasoning और English. सम्पूर्ण तैयारी। (Complete preparation for SSC GD)',
+      color:'ssc', questions:[], exams:[],
+      tags:['80 Questions','60 Min','SSC GD Level']
+    }
+  ],
+  userAnswers: {},
+  markedQuestions: new Set(),
+  visitedQuestions: new Set(),
+  currentModule: null,
+  currentExam: null,
+  currentQ: 0,
+  timerInterval: null,
+  timeLeft: 2700,
+  testStartTime: null,
+  extractedQuestions: []
+};
+
+// ============================
+// PHYSICS QUESTIONS — BILINGUAL
+// ============================
+const physicsQuestions = [
+  {
+    q:"किसी वस्तु की गति के परिवर्तन के लिए क्या आवश्यक है?",
+    qen:"What is necessary to change the motion of an object?",
+    opts:["दूरी","बल (Force)","समय","ऊर्जा"],
+    optsen:["Distance","Force","Time","Energy"],
+    ans:1, topic:"Motion",
+    exp:"गति में परिवर्तन के लिए बाहरी बल का होना आवश्यक है — यह न्यूटन के प्रथम नियम पर आधारित है।",
+    expen:"An external force is necessary to change motion — this is based on Newton's First Law."
+  },
+  {
+    q:"दूरी और विस्थापन में क्या अंतर है?",
+    qen:"What is the difference between Distance and Displacement?",
+    opts:["दूरी सदिश राशि है, विस्थापन अदिश","दूरी अदिश राशि है, विस्थापन सदिश","दोनों अदिश हैं","दोनों सदिश हैं"],
+    optsen:["Distance is vector, displacement is scalar","Distance is scalar, displacement is vector","Both are scalar","Both are vector"],
+    ans:1, topic:"Motion",
+    exp:"दूरी = तय किए गए पथ की लंबाई (अदिश), विस्थापन = दो बिन्दुओं के बीच न्यूनतम दूरी (सदिश)।",
+    expen:"Distance = length of path travelled (scalar), Displacement = shortest distance between two points (vector)."
+  },
+  {
+    q:"एकसमान गति (Uniform Motion) किसे कहते हैं?",
+    qen:"What is called Uniform Motion?",
+    opts:["असमान अंतराल में समान दूरी","एक समान अंतराल में असमान दूरी","एक समान अंतराल में समान दूरी","इनमें से कोई नहीं"],
+    optsen:["Equal distance in unequal intervals","Unequal distance in equal intervals","Equal distance in equal intervals","None of these"],
+    ans:2, topic:"Motion",
+    exp:"एकसमान गति में वस्तु समान समय अंतराल में समान दूरी तय करती है।",
+    expen:"In uniform motion, an object covers equal distance in equal time intervals."
+  },
+  {
+    q:"चाल (Speed) का SI मात्रक क्या है?",
+    qen:"What is the SI unit of Speed?",
+    opts:["km/h","m/s²","m/s","km/s"],
+    optsen:["km/h","m/s²","m/s","km/s"],
+    ans:2, topic:"Motion",
+    exp:"चाल = दूरी/समय, इसका SI मात्रक मीटर/सेकण्ड (m/s) है।",
+    expen:"Speed = Distance/Time. Its SI unit is metre per second (m/s)."
+  },
+  {
+    q:"त्वरण (Acceleration) का SI मात्रक क्या है?",
+    qen:"What is the SI unit of Acceleration?",
+    opts:["m/s","m/s²","km/h","N"],
+    optsen:["m/s","m/s²","km/h","N"],
+    ans:1, topic:"Motion",
+    exp:"त्वरण = वेग में परिवर्तन/समय, इसका SI मात्रक m/s² है।",
+    expen:"Acceleration = Change in velocity/Time. Its SI unit is m/s²."
+  },
+  {
+    q:"वेग-समय ग्राफ का ढाल (Slope) क्या दर्शाता है?",
+    qen:"What does the slope of a Velocity-Time graph represent?",
+    opts:["दूरी","विस्थापन","त्वरण","चाल"],
+    optsen:["Distance","Displacement","Acceleration","Speed"],
+    ans:2, topic:"Motion",
+    exp:"वेग-समय ग्राफ का ढाल = त्वरण, और इसका क्षेत्रफल = विस्थापन।",
+    expen:"Slope of V-T graph = Acceleration, and Area under V-T graph = Displacement."
+  },
+  {
+    q:"गति का प्रथम समीकरण है —",
+    qen:"The first equation of motion is —",
+    opts:["v = u + at","s = ut + ½at²","v² - u² = 2as","F = ma"],
+    optsen:["v = u + at","s = ut + ½at²","v² - u² = 2as","F = ma"],
+    ans:0, topic:"Motion",
+    exp:"गति के तीन समीकरण: (1) v = u+at (2) s = ut + ½at² (3) v²-u² = 2as",
+    expen:"Three equations of motion: (1) v = u+at (2) s = ut + ½at² (3) v²-u² = 2as"
+  },
+  {
+    q:"न्यूटन के प्रथम नियम को किस नाम से भी जानते हैं?",
+    qen:"Newton's First Law is also known as?",
+    opts:["बल का नियम","जड़त्व का नियम","क्रिया-प्रतिक्रिया नियम","संवेग का नियम"],
+    optsen:["Law of Force","Law of Inertia","Law of Action-Reaction","Law of Momentum"],
+    ans:1, topic:"Newton's Laws",
+    exp:"न्यूटन के प्रथम नियम को जड़त्व का नियम (Law of Inertia) भी कहते हैं।",
+    expen:"Newton's First Law is also called the Law of Inertia."
+  },
+  {
+    q:"F = ma किस नियम को व्यक्त करता है?",
+    qen:"Which law does F = ma represent?",
+    opts:["न्यूटन का प्रथम नियम","न्यूटन का द्वितीय नियम","न्यूटन का तृतीय नियम","गुरुत्वाकर्षण नियम"],
+    optsen:["Newton's First Law","Newton's Second Law","Newton's Third Law","Law of Gravitation"],
+    ans:1, topic:"Newton's Laws",
+    exp:"F = ma न्यूटन का द्वितीय नियम है — बल = द्रव्यमान × त्वरण।",
+    expen:"F = ma is Newton's Second Law — Force = Mass × Acceleration."
+  },
+  {
+    q:"संवेग (Momentum) का SI मात्रक क्या है?",
+    qen:"What is the SI unit of Momentum?",
+    opts:["kg·m/s","N/m","kg/m","J"],
+    optsen:["kg·m/s","N/m","kg/m","J (Joule)"],
+    ans:0, topic:"Newton's Laws",
+    exp:"संवेग P = m×v, इसका SI मात्रक kg·m/s है।",
+    expen:"Momentum P = m×v. Its SI unit is kg·m/s."
+  },
+  {
+    q:"गुरुत्वाकर्षण नियतांक G का मान है —",
+    qen:"The value of Universal Gravitational Constant G is —",
+    opts:["9.8 m/s²","6.67×10⁻¹¹ Nm²/kg²","3×10⁸ m/s","6.023×10²³"],
+    optsen:["9.8 m/s²","6.67×10⁻¹¹ Nm²/kg²","3×10⁸ m/s","6.023×10²³"],
+    ans:1, topic:"Gravitation",
+    exp:"G = 6.67×10⁻¹¹ Nm²/kg² — यह यूनिवर्सल गुरुत्वाकर्षण नियतांक है।",
+    expen:"G = 6.67×10⁻¹¹ Nm²/kg² — This is the Universal Gravitational Constant."
+  },
+  {
+    q:"पृथ्वी पर गुरुत्वीय त्वरण g का मान लगभग है —",
+    qen:"The approximate value of gravitational acceleration g on Earth is —",
+    opts:["8.9 m/s²","9.8 m/s²","10.8 m/s²","11.2 m/s²"],
+    optsen:["8.9 m/s²","9.8 m/s²","10.8 m/s²","11.2 m/s²"],
+    ans:1, topic:"Gravitation",
+    exp:"पृथ्वी पर g ≈ 9.8 m/s² (सरल गणना के लिए 10 m/s² लेते हैं)",
+    expen:"On Earth, g ≈ 9.8 m/s² (taken as 10 m/s² for simple calculations)"
+  },
+  {
+    q:"चन्द्रमा पर भार पृथ्वी के भार का कितना भाग होता है?",
+    qen:"Weight on Moon is what fraction of weight on Earth?",
+    opts:["1/2","1/4","1/6","1/8"],
+    optsen:["1/2","1/4","1/6","1/8"],
+    ans:2, topic:"Gravitation",
+    exp:"चन्द्रमा पर g पृथ्वी के g का 1/6 भाग है, इसलिए चन्द्रमा पर भार = पृथ्वी के भार का 1/6।",
+    expen:"Moon's g is 1/6 of Earth's g. Hence weight on Moon = 1/6 of weight on Earth."
+  },
+  {
+    q:"पलायन वेग (Escape Velocity) का मान पृथ्वी के लिए है —",
+    qen:"The Escape Velocity from Earth is —",
+    opts:["7.9 km/s","11.2 km/s","3×10⁸ m/s","9.8 m/s"],
+    optsen:["7.9 km/s","11.2 km/s","3×10⁸ m/s","9.8 m/s"],
+    ans:1, topic:"Gravitation",
+    exp:"पृथ्वी से पलायन वेग = 11.2 km/s।",
+    expen:"Escape velocity from Earth = 11.2 km/s."
+  },
+  {
+    q:"आर्किमिडीज का सिद्धांत किससे संबंधित है?",
+    qen:"Archimedes' Principle is related to?",
+    opts:["विद्युत धारा","उत्प्लावन बल","प्रकाश का परावर्तन","ध्वनि"],
+    optsen:["Electric current","Buoyant force","Reflection of light","Sound"],
+    ans:1, topic:"Pressure",
+    exp:"आर्किमिडीज के अनुसार: किसी तरल में डूबी वस्तु पर उत्प्लावन बल = विस्थापित तरल के भार के बराबर।",
+    expen:"Archimedes' Principle: Buoyant force on an object = Weight of fluid displaced."
+  },
+  {
+    q:"प्रकाश का वेग निर्वात में कितना है?",
+    qen:"What is the speed of light in vacuum?",
+    opts:["3×10⁶ m/s","3×10⁸ m/s","3×10¹⁰ m/s","3×10⁴ m/s"],
+    optsen:["3×10⁶ m/s","3×10⁸ m/s","3×10¹⁰ m/s","3×10⁴ m/s"],
+    ans:1, topic:"Light",
+    exp:"निर्वात में प्रकाश का वेग = 3×10⁸ m/s (3 लाख किलोमीटर/सेकण्ड)",
+    expen:"Speed of light in vacuum = 3×10⁸ m/s (approximately 3 lakh km/sec)"
+  },
+  {
+    q:"परावर्तन के नियम के अनुसार आपतन कोण और परावर्तन कोण —",
+    qen:"According to the law of reflection, angle of incidence and angle of reflection —",
+    opts:["बराबर होते हैं","अलग-अलग होते हैं","आपतन कोण बड़ा होता है","परावर्तन कोण बड़ा होता है"],
+    optsen:["Are equal","Are different","Incidence angle is larger","Reflection angle is larger"],
+    ans:0, topic:"Light",
+    exp:"परावर्तन का पहला नियम: आपतन कोण (∠i) = परावर्तन कोण (∠r)",
+    expen:"First law of reflection: Angle of incidence (∠i) = Angle of reflection (∠r)"
+  },
+  {
+    q:"अवतल दर्पण (Concave Mirror) का उपयोग होता है —",
+    qen:"Concave Mirror is used in —",
+    opts:["वाहनों के पीछे देखने में","सौर भट्टी में","ATM मशीन में","सड़क की लाइट में"],
+    optsen:["Rear-view mirrors in vehicles","Solar furnaces","ATM machines","Street lights"],
+    ans:1, topic:"Light",
+    exp:"अवतल दर्पण: सेविंग दर्पण, टॉर्च, सौर भट्टी, दाँत का डॉक्टर — ये सभी अवतल दर्पण का उपयोग करते हैं।",
+    expen:"Concave mirror uses: Shaving mirror, torch, solar furnace, dentist's mirror."
+  },
+  {
+    q:"हीरे की चमक किस कारण होती है?",
+    qen:"The brilliance of diamond is due to?",
+    opts:["परावर्तन","प्रकीर्णन","पूर्ण आंतरिक परावर्तन","अपवर्तन"],
+    optsen:["Reflection","Scattering","Total Internal Reflection","Refraction"],
+    ans:2, topic:"Light",
+    exp:"हीरे का अपवर्तनांक = 2.42। क्रांतिक कोण बहुत कम होने से पूर्ण आंतरिक परावर्तन होता है।",
+    expen:"Diamond's refractive index = 2.42. Very small critical angle causes Total Internal Reflection."
+  },
+  {
+    q:"ध्वनि की गति सबसे अधिक किसमें होती है?",
+    qen:"The speed of sound is highest in?",
+    opts:["वायु","जल","ठोस","निर्वात"],
+    optsen:["Air","Water","Solid","Vacuum"],
+    ans:2, topic:"Sound",
+    exp:"ध्वनि की गति: ठोस > द्रव > गैस। ध्वनि निर्वात में नहीं चल सकती।",
+    expen:"Speed of sound: Solid > Liquid > Gas. Sound cannot travel through vacuum."
+  },
+  {
+    q:"20 Hz से 20,000 Hz के बीच की ध्वनि को कहते हैं —",
+    qen:"Sound between 20 Hz and 20,000 Hz is called —",
+    opts:["पराश्रव्य","अवश्रव्य","श्रव्य (Audible)","उपरोक्त सभी"],
+    optsen:["Ultrasonic","Infrasonic","Audible sound","All of the above"],
+    ans:2, topic:"Sound",
+    exp:"मानव सुनने की श्रेणी = 20 Hz से 20,000 Hz (श्रव्य ध्वनि)।",
+    expen:"Human hearing range = 20 Hz to 20,000 Hz (Audible sound)."
+  },
+  {
+    q:"गूँज (Echo) के लिए श्रोता और परावर्तक सतह के बीच न्यूनतम दूरी होनी चाहिए —",
+    qen:"Minimum distance between listener and reflecting surface for Echo is —",
+    opts:["7 m","17.2 m","34 m","50 m"],
+    optsen:["7 m","17.2 m","34 m","50 m"],
+    ans:1, topic:"Sound",
+    exp:"Echo के लिए न्यूनतम दूरी = 17.2 m (0°C पर) — ध्वनि को जाने और वापस आने में 1/10 sec लगता है।",
+    expen:"Minimum distance for echo = 17.2 m (at 0°C) — Sound takes 1/10 sec to go and return."
+  },
+  {
+    q:"विद्युत धारा का SI मात्रक है —",
+    qen:"The SI unit of Electric Current is —",
+    opts:["वोल्ट","ओम","एम्पियर","वाट"],
+    optsen:["Volt","Ohm","Ampere","Watt"],
+    ans:2, topic:"Electricity",
+    exp:"विद्युत धारा का SI मात्रक एम्पियर (A) है।",
+    expen:"SI unit of electric current is Ampere (A)."
+  },
+  {
+    q:"ओम के नियम V = IR में R है —",
+    qen:"In Ohm's Law V = IR, R represents —",
+    opts:["प्रतिरोध","धारा","वोल्टेज","शक्ति"],
+    optsen:["Resistance","Current","Voltage","Power"],
+    ans:0, topic:"Electricity",
+    exp:"V=IR में V = विभवांतर (Volt), I = धारा (Ampere), R = प्रतिरोध (Ohm)।",
+    expen:"In V=IR: V = Potential difference (Volt), I = Current (Ampere), R = Resistance (Ohm)."
+  },
+  {
+    q:"1 यूनिट विद्युत ऊर्जा बराबर है —",
+    qen:"1 Unit of electrical energy is equal to —",
+    opts:["1 जूल","1 वाट","1 kWh","3600 जूल"],
+    optsen:["1 Joule","1 Watt","1 kWh","3600 Joules"],
+    ans:2, topic:"Electricity",
+    exp:"1 Unit = 1 kWh = 1000W × 3600 sec = 3.6×10⁶ जूल।",
+    expen:"1 Unit = 1 kWh = 1000W × 3600 sec = 3.6×10⁶ Joules."
+  },
+  {
+    q:"विद्युत चुंबकीय प्रेरण की खोज किसने की?",
+    qen:"Who discovered Electromagnetic Induction?",
+    opts:["न्यूटन","फैराडे","ओर्स्टेड","आइंस्टीन"],
+    optsen:["Newton","Faraday","Oersted","Einstein"],
+    ans:1, topic:"Magnetism",
+    exp:"माइकल फैराडे (1831) ने विद्युत चुंबकीय प्रेरण की खोज की।",
+    expen:"Michael Faraday (1831) discovered Electromagnetic Induction."
+  },
+  {
+    q:"फ्लेमिंग के बाएं हाथ के नियम का उपयोग किसमें होता है?",
+    qen:"Fleming's Left Hand Rule is used for —",
+    opts:["जनरेटर","मोटर","ट्रांसफार्मर","प्रेरण"],
+    optsen:["Generator","Motor","Transformer","Induction"],
+    ans:1, topic:"Magnetism",
+    exp:"फ्लेमिंग का बायाँ हाथ नियम → मोटर (विद्युत ऊर्जा → यांत्रिक ऊर्जा)।",
+    expen:"Fleming's Left Hand Rule → Motor (Electrical energy → Mechanical energy)."
+  },
+  {
+    q:"इंद्रधनुष बनने में होती है —",
+    qen:"Rainbow formation involves —",
+    opts:["केवल परावर्तन","केवल अपवर्तन","2 अपवर्तन और 1 परावर्तन","1 अपवर्तन और 2 परावर्तन"],
+    optsen:["Only reflection","Only refraction","2 refractions and 1 reflection","1 refraction and 2 reflections"],
+    ans:2, topic:"Light",
+    exp:"इंद्रधनुष = 2 अपवर्तन + 1 परावर्तन (वर्षा की बूँदों में)।",
+    expen:"Rainbow = 2 refractions + 1 reflection (inside raindrops)."
+  },
+  {
+    q:"आसमान नीला क्यों दिखता है?",
+    qen:"Why does the sky appear blue?",
+    opts:["जल वाष्प के कारण","नीले प्रकाश के प्रकीर्णन के कारण","सूर्य की स्थिति के कारण","ओजोन के कारण"],
+    optsen:["Due to water vapour","Due to scattering of blue light","Due to position of Sun","Due to ozone"],
+    ans:1, topic:"Light",
+    exp:"नीला प्रकाश अन्य रंगों की तुलना में अधिक प्रकीर्णित होता है (Rayleigh scattering)।",
+    expen:"Blue light scatters more than other colours (Rayleigh scattering) — hence sky appears blue."
+  },
+  {
+    q:"मायोपिया (Myopia/निकट दृष्टि दोष) के उपचार में किस लेंस का प्रयोग होता है?",
+    qen:"Which lens is used to correct Myopia (Short-sightedness)?",
+    opts:["उत्तल लेंस","अवतल लेंस","बायफोकल","प्रिज्म"],
+    optsen:["Convex lens","Concave lens","Bifocal lens","Prism"],
+    ans:1, topic:"Light",
+    exp:"निकट दृष्टि दोष (Myopia) = अवतल लेंस (-ve power) से ठीक होता है।",
+    expen:"Myopia (Short-sightedness) is corrected by Concave lens (negative power)."
+  }
+];
+
+// Pre-load physics questions
+store.modules[0].questions = physicsQuestions.map((q,i) => ({...q, id:i}));
+generateExams('physics');
+
+['bsf','joa','sscgd'].forEach(mid => {
+  const m = store.modules.find(m=>m.id===mid);
+  m.exams = [
+    {id:mid+'_1', name:`${m.name} — Set 1 (Sample)`, qCount:0, time:120, status:'coming'},
+    {id:mid+'_2', name:`${m.name} — Set 2 (Sample)`, qCount:0, time:120, status:'coming'},
+  ];
+});
+
+function generateExams(modId) {
+  const m = store.modules.find(m=>m.id===modId);
+  const qs = m.questions;
+  m.exams = [];
+  if (qs.length >= 10) {
+    m.exams.push({id:modId+'_full', name:`Full Mock Test — ${m.name}`, qCount:qs.length, time:45, status:'active'});
+  }
+  if (qs.length >= 10) {
+    m.exams.push({id:modId+'_mini', name:`Mini Mock — 10 Questions / 10 प्रश्न`, qCount:Math.min(10,qs.length), time:10, status:'active'});
+  }
+  if (qs.length > 20) {
+    m.exams.push({id:modId+'_set2', name:`Practice Set 2 — ${Math.min(15,qs.length)} Questions`, qCount:Math.min(15,qs.length), time:20, status:'active'});
+  }
+}
+
+// ============================
+// VIEW MANAGEMENT
+// ============================
+function showView(v) {
+  // Block admin view if not logged in
+  if(v==='admin' && !isAdminLoggedIn) { openAdminLogin(); return; }
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  if(v==='home') renderHome();
+  if(v==='admin') renderAdmin();
+  window.scrollTo(0,0);
+}
+
+// ============================
+// HOME RENDERING
+// ============================
+function renderHome() {
+  const grid = document.getElementById('modules-grid');
+  grid.innerHTML = store.modules.map(m => `
+    <div class="module-card m-${m.color}" onclick="openModule('${m.id}')">
+      <div class="module-banner"></div>
+      <div class="module-body">
+        <div class="module-icon">${m.icon}</div>
+        <div class="module-title">${m.name}</div>
+        <div class="module-desc">${m.desc}</div>
+        <div class="module-meta">
+          ${m.tags.map((t,i) => `<span class="meta-tag ${i===0?'badge-q':i===1?'badge-t':'badge-d'}">${t}</span>`).join('')}
+        </div>
+        <div class="module-footer">
+          <span class="exam-count"><i class="fa fa-clipboard-list"></i> ${m.questions.length} questions / प्रश्न</span>
+          <button class="start-btn" onclick="event.stopPropagation();openModule('${m.id}')">Start Test →</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  const totalQ = store.modules.reduce((a,m)=>a+m.questions.length,0);
+  document.getElementById('total-q-count').textContent = totalQ + '+';
+}
+
+// ============================
+// EXAM SELECTION
+// ============================
+function openModule(modId) {
+  store.currentModule = store.modules.find(m=>m.id===modId);
+  document.getElementById('exam-module-title').textContent = store.currentModule.name;
+  document.getElementById('exam-module-sub').textContent = `${store.currentModule.questions.length} questions available / प्रश्न उपलब्ध`;
+
+  const list = document.getElementById('exams-list');
+  const exams = store.currentModule.exams;
+
+  if(exams.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:12px">📝</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">कोई टेस्ट उपलब्ध नहीं / No exams available yet</div>
+      <div style="font-size:14px">Admin Panel → Add questions to this module first</div>
+      <button class="start-btn" style="margin-top:16px;background:var(--primary)" onclick="openAdminLogin()">Go to Admin Panel</button>
+    </div>`;
+  } else {
+    list.innerHTML = exams.map((ex,i) => `
+      <div class="exam-item" onclick="${ex.status==='active'?`startExam('${modId}','${ex.id}',${ex.qCount})`:''}">
+        <div class="exam-item-left">
+          <div class="exam-num">${i+1}</div>
+          <div>
+            <div class="exam-name">${ex.name}</div>
+            <div class="exam-info">
+              <span><i class="fa fa-question-circle"></i> ${ex.qCount} Questions / प्रश्न</span> &nbsp;•&nbsp;
+              <span><i class="fa fa-clock"></i> ${ex.time} Min / मिनट</span> &nbsp;•&nbsp;
+              <span style="color:${ex.status==='active'?'var(--success)':'var(--warning)'}">
+                ${ex.status==='active'?'✅ Available / उपलब्ध':'🔜 Coming Soon / जल्द आएगा'}
+              </span>
+            </div>
+          </div>
+        </div>
+        ${ex.status==='active' ? `<button class="exam-start">Start / शुरू →</button>` : ''}
+      </div>
+    `).join('');
+  }
+  showView('exams');
+}
+
+// ============================
+// START EXAM
+// ============================
+function startExam(modId, examId, qCount) {
+  const mod = store.modules.find(m=>m.id===modId);
+  const exam = mod.exams.find(e=>e.id===examId);
+  let questions = [...mod.questions];
+  questions = shuffleArr(questions).slice(0, qCount);
+  if(questions.length === 0) { showToast('No questions available! / प्रश्न उपलब्ध नहीं!','error'); return; }
+
+  store.currentModule = mod;
+  store.currentExam = {...exam, questions};
+  store.currentQ = 0;
+  store.userAnswers = {};
+  store.markedQuestions = new Set();
+  store.visitedQuestions = new Set([0]);
+  store.timeLeft = exam.time * 60;
+  store.testStartTime = Date.now();
+
+  document.getElementById('test-title').textContent = exam.name;
+  // Remove danger class from timer
+  document.getElementById('timer-box').classList.remove('danger');
+  showView('test');
+  renderQuestion();
+  buildQGrid();
+  startTimer();
+}
+
+function shuffleArr(arr) {
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+// ============================
+// QUESTION RENDERING — BILINGUAL
+// ============================
+function renderQuestion() {
+  const qs = store.currentExam.questions;
+  const idx = store.currentQ;
+  const q = qs[idx];
+
+  document.getElementById('q-badge').textContent = `Question ${idx+1} of ${qs.length} | प्रश्न ${idx+1}/${qs.length}`;
+
+  const qTextEl = document.getElementById('q-text');
+  if(currentLang === 'hi' && q.qen) {
+    qTextEl.innerHTML = `<span class="q-hindi">${q.q}</span><span class="q-english">${q.qen}</span>`;
+  } else if(currentLang === 'en' && q.qen) {
+    qTextEl.innerHTML = `<span class="q-hindi">${q.qen}</span>`;
+  } else {
+    qTextEl.innerHTML = `<span class="q-hindi">${q.q}</span>`;
+  }
+
+  const optCont = document.getElementById('options-container');
+  optCont.innerHTML = q.opts.map((opt,i) => {
+    const enOpt = q.optsen ? q.optsen[i] : null;
+    const optContent = (currentLang === 'hi' && enOpt && enOpt !== opt)
+      ? `<span class="opt-hi">${opt}</span><span class="opt-en">${enOpt}</span>`
+      : (currentLang === 'en' && enOpt ? `<span class="opt-hi">${enOpt}</span>` : `<span class="opt-hi">${opt}</span>`);
+    return `
+      <div class="option ${store.userAnswers[idx]===i?'selected':''}" onclick="selectAnswer(${i})">
+        <div class="option-key">${String.fromCharCode(65+i)}</div>
+        <div class="option-text">${optContent}</div>
+      </div>`;
+  }).join('');
+
+  buildQGrid();
+}
+
+function selectAnswer(optIdx) {
+  const idx = store.currentQ;
+  if(store.userAnswers[idx] === optIdx) delete store.userAnswers[idx];
+  else store.userAnswers[idx] = optIdx;
+  renderQuestion();
+}
+
+function nextQ() {
+  if(store.currentQ < store.currentExam.questions.length-1) {
+    store.currentQ++;
+    store.visitedQuestions.add(store.currentQ);
+    renderQuestion();
+  }
+}
+function prevQ() {
+  if(store.currentQ > 0) {
+    store.currentQ--;
+    renderQuestion();
+  }
+}
+function markForReview() {
+  if(store.markedQuestions.has(store.currentQ)) store.markedQuestions.delete(store.currentQ);
+  else store.markedQuestions.add(store.currentQ);
+  buildQGrid();
+  showToast(store.markedQuestions.has(store.currentQ)?'Marked for review / चिह्नित':'Unmarked / अचिह्नित');
+}
+
+function buildQGrid() {
+  const qs = store.currentExam.questions;
+  const grid = document.getElementById('q-grid');
+  grid.innerHTML = qs.map((_,i) => {
+    let cls = 'not-visited';
+    if(store.markedQuestions.has(i)) cls='marked';
+    else if(store.userAnswers[i]!==undefined) cls='answered';
+    else if(store.visitedQuestions.has(i)) cls='';
+    if(i===store.currentQ) cls+=' current';
+    return `<div class="q-num ${cls}" onclick="goToQ(${i})">${i+1}</div>`;
+  }).join('');
+}
+
+function goToQ(i) {
+  store.currentQ = i;
+  store.visitedQuestions.add(i);
+  renderQuestion();
+}
+
+// ============================
+// TIMER
+// ============================
+function startTimer() {
+  clearInterval(store.timerInterval);
+  updateTimerDisplay();
+  store.timerInterval = setInterval(() => {
+    store.timeLeft--;
+    updateTimerDisplay();
+    if(store.timeLeft <= 0) { clearInterval(store.timerInterval); submitTest(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(store.timeLeft/60);
+  const s = store.timeLeft % 60;
+  document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if(store.timeLeft <= 300) document.getElementById('timer-box').classList.add('danger');
+}
+
+// ============================
+// SUBMIT TEST
+// ============================
+function submitTest() {
+  clearInterval(store.timerInterval);
+  const qs = store.currentExam.questions;
+  let correct=0, wrong=0, skipped=0, score=0;
+
+  qs.forEach((q,i) => {
+    if(store.userAnswers[i] === undefined) skipped++;
+    else if(store.userAnswers[i] === q.ans) { correct++; score+=4; }
+    else { wrong++; score-=1; }
+  });
+
+  const pct = Math.round((correct/qs.length)*100);
+  const timeTaken = Math.floor((Date.now()-store.testStartTime)/1000);
+  const tMin = Math.floor(timeTaken/60), tSec = timeTaken%60;
+
+  document.getElementById('result-title').textContent = pct>=60?'बेहतरीन! Great Performance! 🎉':'और अभ्यास करें! Keep Practicing! 💪';
+  document.getElementById('result-subtitle').textContent = store.currentExam.name;
+  document.getElementById('score-pct').textContent = pct+'%';
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+  document.getElementById('res-skipped').textContent = skipped;
+  document.getElementById('res-score').textContent = score;
+  document.getElementById('res-accuracy').textContent = correct>0?Math.round((correct/(correct+wrong))*100)+'%':'0%';
+  document.getElementById('res-time').textContent = `${tMin}m ${tSec}s`;
+
+  const rev = document.getElementById('review-container');
+  rev.innerHTML = qs.map((q,i) => {
+    const ua = store.userAnswers[i];
+    const qDisplay = (currentLang==='hi' && q.qen) ? `${q.q}<span class="q-en">${q.qen}</span>` : (q.qen || q.q);
+    return `
+      <div class="review-item">
+        <div class="review-q-num">Q${i+1} ${q.topic?`— ${q.topic}`:''} ${ua===undefined?'⬜ छोड़ा/Skipped':ua===q.ans?'✅ सही/Correct':'❌ गलत/Wrong'}</div>
+        <div class="review-q-text">${qDisplay}</div>
+        <div class="review-options">
+          ${q.opts.map((opt,j) => {
+            let cls='';
+            if(j===q.ans) cls='correct';
+            else if(j===ua && ua!==q.ans) cls='wrong';
+            const enOpt = q.optsen ? q.optsen[j] : '';
+            const dispOpt = (currentLang==='hi' && enOpt && enOpt!==opt) ? `${opt} / ${enOpt}` : (currentLang==='en' && enOpt ? enOpt : opt);
+            return `<div class="review-option ${cls}">
+              <span class="ri">${j===q.ans?'✓':j===ua?'✗':'○'}</span>
+              <span>${String.fromCharCode(65+j)}. ${dispOpt}</span>
+            </div>`;
+          }).join('')}
+        </div>
+        ${q.exp?`<div style="font-size:12px;color:var(--muted);margin-top:8px;padding:8px;background:#f8faff;border-radius:6px;border-left:3px solid var(--accent2)">
+          <strong>💡</strong> ${q.exp}${q.expen?`<br><span style="font-style:italic;color:#94a3b8">${q.expen}</span>`:''}
+        </div>`:''}
+      </div>`;
+  }).join('');
+
+  showView('result');
+}
+
+function retakeTest() {
+  startExam(store.currentModule.id, store.currentExam.id, store.currentExam.questions.length);
+}
+
+// ============================
+// ADMIN
+// ============================
+function adminTab(tab) {
+  ['dashboard','add-questions','upload-pdf','manage'].forEach(t => {
+    const el = document.getElementById('admin-'+t);
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.admin-nav-item').forEach(el=>el.classList.remove('active'));
+  const tabs = ['dashboard','add-questions','upload-pdf','manage'];
+  const idx = tabs.indexOf(tab);
+  if(idx>=0) document.getElementById('anav-'+idx).classList.add('active');
+}
+
+function renderAdmin() {
+  const totalQ = store.modules.reduce((a,m)=>a+m.questions.length,0);
+  const totalT = store.modules.reduce((a,m)=>a+m.exams.filter(e=>e.status==='active').length,0);
+  const qEl = document.getElementById('adm-total-q');
+  const tEl = document.getElementById('adm-total-t');
+  const mEl = document.getElementById('adm-total-m');
+  if(qEl) qEl.textContent = totalQ;
+  if(tEl) tEl.textContent = totalT;
+  if(mEl) mEl.textContent = store.modules.length;
+
+  const tbody = document.getElementById('module-overview-body');
+  if(tbody) tbody.innerHTML = store.modules.map(m => `
+    <tr>
+      <td>${m.icon} ${m.name}</td>
+      <td>${m.questions.length}</td>
+      <td>${m.exams.filter(e=>e.status==='active').length}</td>
+      <td><span class="status-pill ${m.questions.length>0?'active':'draft'}">${m.questions.length>0?'Active':'No Questions'}</span></td>
+    </tr>
+  `).join('');
+
+  const mtbody = document.getElementById('manage-modules-body');
+  if(mtbody) mtbody.innerHTML = store.modules.map(m => `
+    <tr>
+      <td>${m.icon} ${m.name}</td>
+      <td>${m.questions.length} questions</td>
+      <td>
+        <button class="admin-btn primary" style="font-size:11px;padding:4px 10px" onclick="openModule('${m.id}');showView('exams')">Preview</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function addQuestionManually() {
+  const text = document.getElementById('aq-text').value.trim();
+  const textEn = document.getElementById('aq-text-en').value.trim();
+  const a = document.getElementById('aq-a').value.trim();
+  const b = document.getElementById('aq-b').value.trim();
+  const c = document.getElementById('aq-c').value.trim();
+  const d = document.getElementById('aq-d').value.trim();
+  const aen = document.getElementById('aq-a-en').value.trim();
+  const ben = document.getElementById('aq-b-en').value.trim();
+  const cen = document.getElementById('aq-c-en').value.trim();
+  const den = document.getElementById('aq-d-en').value.trim();
+  const ans = parseInt(document.getElementById('aq-correct').value);
+  const exp = document.getElementById('aq-explanation').value.trim();
+  const modId = document.getElementById('aq-module').value;
+
+  if(!text||!a||!b||!c||!d) { showToast('Please fill all required fields / सभी आवश्यक फ़ील्ड भरें','error'); return; }
+
+  const mod = store.modules.find(m=>m.id===modId);
+  mod.questions.push({
+    q:text, qen:textEn||'',
+    opts:[a,b,c,d], optsen:[aen||a,ben||b,cen||c,den||d],
+    ans, exp: exp||'', expen:'', id:mod.questions.length, topic:'General'
+  });
+  generateExams(modId);
+
+  ['aq-text','aq-text-en','aq-a','aq-b','aq-c','aq-d','aq-a-en','aq-b-en','aq-c-en','aq-d-en','aq-explanation'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value='';
+  });
+  showToast(`Question added to ${mod.name}! (${mod.questions.length} total)`);
+  renderAdmin();
+}
+
+// PDF Upload simulation
+let tempPDFQuestions = [];
+
+function handlePDFUpload(input) {
+  const file = input.files[0];
+  if(!file) return;
+  document.getElementById('pdf-filename').textContent = file.name + ' uploaded';
+  document.getElementById('pdf-upload-status').style.display='block';
+  document.getElementById('pdf-preview').style.display='none';
+  showToast('PDF uploaded: ' + file.name);
+}
+
+function extractFromPDF() {
+  const modId = document.getElementById('pdf-module').value;
+  document.getElementById('processing-overlay').classList.add('show');
+  document.getElementById('processing-text').textContent = 'Extracting MCQ questions from PDF...';
+  document.getElementById('processing-sub').textContent = 'Parsing question patterns with AI';
+
+  setTimeout(() => {
+    const sampleExtracted = generateSampleExtracted(modId);
+    tempPDFQuestions = sampleExtracted;
+
+    const preview = document.getElementById('pdf-preview-content');
+    preview.innerHTML = sampleExtracted.slice(0,5).map((q,i) => `
+      <div class="pdf-q-item">
+        <strong>Q${i+1}.</strong> ${q.q}<br>
+        <span style="color:#475569;font-size:11px">Ans: ${String.fromCharCode(65+q.ans)} — ${q.opts[q.ans]}</span>
+      </div>
+    `).join('') + (sampleExtracted.length>5?`<div style="color:#475569;font-size:12px;padding:6px 0">...and ${sampleExtracted.length-5} more questions</div>`:'');
+
+    document.getElementById('extracted-count').textContent = sampleExtracted.length + ' questions extracted';
+    document.getElementById('pdf-preview').style.display='block';
+    document.getElementById('processing-overlay').classList.remove('show');
+    showToast(`Extracted ${sampleExtracted.length} questions from PDF!`);
+  }, 2800);
+}
+
+function savePDFQuestions() {
+  const modId = document.getElementById('pdf-module').value;
+  const mod = store.modules.find(m=>m.id===modId);
+  tempPDFQuestions.forEach(q => mod.questions.push({...q, id:mod.questions.length}));
+  generateExams(modId);
+  showToast(`Saved ${tempPDFQuestions.length} questions to ${mod.name}!`);
+  document.getElementById('pdf-preview').style.display='none';
+  document.getElementById('pdf-upload-status').style.display='none';
+  renderAdmin();
+  tempPDFQuestions = [];
+}
+
+function generateSampleExtracted(modId) {
+  const samples = {
+    bsf:[
+      {q:"BSF की स्थापना किस वर्ष हुई थी? (In which year was BSF established?)",qen:"In which year was BSF established?",opts:["1963","1964","1965","1947"],optsen:["1963","1964","1965","1947"],ans:2,topic:"GK",exp:"BSF की स्थापना 1 दिसंबर 1965 को हुई।",expen:"BSF was established on 1st December 1965."},
+      {q:"BSF का मुख्यालय कहाँ है? (Where is BSF Headquarters?)",qen:"Where is BSF Headquarters?",opts:["मुंबई","नई दिल्ली","लखनऊ","जयपुर"],optsen:["Mumbai","New Delhi","Lucknow","Jaipur"],ans:1,topic:"GK",exp:"BSF का मुख्यालय नई दिल्ली में है।",expen:"BSF Headquarters is in New Delhi."},
+      {q:"भारत का संविधान कब लागू हुआ? (When did India's Constitution come into force?)",qen:"When did India's Constitution come into force?",opts:["15 Aug 1947","26 Jan 1950","26 Nov 1949","2 Oct 1952"],optsen:["15 Aug 1947","26 Jan 1950","26 Nov 1949","2 Oct 1952"],ans:1,topic:"GK",exp:"भारत का संविधान 26 जनवरी 1950 को लागू हुआ।",expen:"India's Constitution came into force on 26 January 1950."},
+      {q:"√2 का अनुमानित मान है: (Approximate value of √2 is:)",qen:"Approximate value of √2 is:",opts:["1.41","1.73","2.00","1.23"],optsen:["1.41","1.73","2.00","1.23"],ans:0,topic:"Maths",exp:"√2 ≈ 1.414",expen:"√2 ≈ 1.414"},
+      {q:"एक ट्रेन 60 km/h की गति से 300 km तय करने में समय? (Time for train at 60 km/h to cover 300 km?)",qen:"Time for a train at 60 km/h to cover 300 km?",opts:["4 घंटे/hours","5 घंटे/hours","6 घंटे/hours","3 घंटे/hours"],optsen:["4 hours","5 hours","6 hours","3 hours"],ans:1,topic:"Maths",exp:"समय = दूरी/गति = 300/60 = 5 घंटे",expen:"Time = Distance/Speed = 300/60 = 5 hours"},
+    ],
+    joa:[
+      {q:"MS Word में नया डॉक्युमेंट खोलने की शॉर्टकट key? (Shortcut key to open new document in MS Word?)",qen:"Shortcut key to open new document in MS Word?",opts:["Ctrl+O","Ctrl+N","Ctrl+S","Ctrl+P"],optsen:["Ctrl+O","Ctrl+N","Ctrl+S","Ctrl+P"],ans:1,topic:"Computer",exp:"Ctrl+N = New Document",expen:"Ctrl+N = New Document"},
+      {q:"CPU का पूरा नाम है: (Full form of CPU is:)",qen:"Full form of CPU is:",opts:["Central Processing Unit","Computer Processing Unit","Core Processing Unit","Central Program Unit"],optsen:["Central Processing Unit","Computer Processing Unit","Core Processing Unit","Central Program Unit"],ans:0,topic:"Computer",exp:"CPU = Central Processing Unit",expen:"CPU = Central Processing Unit"},
+      {q:"RAM का अर्थ है: (RAM stands for:)",qen:"RAM stands for:",opts:["Read Access Memory","Random Access Memory","Rapid Access Memory","Read And Memory"],optsen:["Read Access Memory","Random Access Memory","Rapid Access Memory","Read And Memory"],ans:1,topic:"Computer",exp:"RAM = Random Access Memory",expen:"RAM = Random Access Memory"},
+      {q:"HTTP का पूरा नाम है: (Full form of HTTP is:)",qen:"Full form of HTTP is:",opts:["HyperText Transfer Protocol","HyperText Text Protocol","High Transfer Text Protocol","HyperText Transmission Protocol"],optsen:["HyperText Transfer Protocol","HyperText Text Protocol","High Transfer Text Protocol","HyperText Transmission Protocol"],ans:0,topic:"Computer",exp:"HTTP = HyperText Transfer Protocol",expen:"HTTP = HyperText Transfer Protocol"},
+    ],
+    sscgd:[
+      {q:"भारत का राष्ट्रीय पशु है: (National animal of India is:)",qen:"National animal of India is:",opts:["हाथी/Elephant","बाघ/Tiger","शेर/Lion","मोर/Peacock"],optsen:["Elephant","Tiger","Lion","Peacock"],ans:1,topic:"GK",exp:"बाघ (Bengal Tiger) भारत का राष्ट्रीय पशु है।",expen:"Tiger (Bengal Tiger) is India's National Animal."},
+      {q:"भारत का राष्ट्रीय खेल कौन सा है? (What is the National Game of India?)",qen:"What is the National Game of India?",opts:["हॉकी/Hockey","क्रिकेट/Cricket","कबड्डी/Kabaddi","शतरंज/Chess"],optsen:["Hockey","Cricket","Kabaddi","Chess"],ans:0,topic:"GK",exp:"हॉकी भारत का राष्ट्रीय खेल है।",expen:"Hockey is the National Game of India."},
+      {q:"15 × 15 = ? (15 × 15 = ?)",qen:"15 × 15 = ?",opts:["125","225","215","235"],optsen:["125","225","215","235"],ans:1,topic:"Maths",exp:"15 × 15 = 225",expen:"15 × 15 = 225"},
+      {q:"आयत की लंबाई 8m, चौड़ाई 6m — क्षेत्रफल? (Rectangle length 8m, width 6m — Area?)",qen:"Rectangle with length 8m and width 6m — Area?",opts:["28 m²","48 m²","36 m²","56 m²"],optsen:["28 m²","48 m²","36 m²","56 m²"],ans:1,topic:"Maths",exp:"क्षेत्रफल = 8 × 6 = 48 m²",expen:"Area = 8 × 6 = 48 m²"},
+    ]
+  };
+  return samples[modId] || physicsQuestions.slice(0,5).map(q=>({...q}));
+}
+
+function createModule() {
+  const name = document.getElementById('new-module-name').value.trim();
+  const desc = document.getElementById('new-module-desc').value.trim();
+  const color = document.getElementById('new-module-color').value;
+  if(!name) { showToast('Please enter module name / मॉड्यूल नाम दर्ज करें','error'); return; }
+  const id = name.toLowerCase().replace(/\s+/g,'-');
+  store.modules.push({id,name,icon:'📋',desc:desc||'Custom module',color,questions:[],exams:[],tags:['0 Questions','Custom','New']});
+  document.getElementById('new-module-name').value='';
+  document.getElementById('new-module-desc').value='';
+  showToast(`Module "${name}" created!`);
+  renderAdmin();
+}
+
+// ============================
+// TOAST
+// ============================
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.className = 'toast show' + (type==='error'?' error':'');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ============================
+// INIT
+// ============================
+renderHome();
+adminTab('dashboard');
+</script>
+</body>
+</html>
