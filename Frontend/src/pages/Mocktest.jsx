@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
+const API = import.meta.env.VITE_API;
 
 async function fetchQuestions(examSlug, count = 20) {
   const params = new URLSearchParams();
   if (examSlug) params.set("examSlug", examSlug);
   params.set("limit", count);
-  const url = `http://localhost:3000/exams/questions/all?${params.toString()}`;
+  const url = `${API}/exams/questions/all?${params.toString()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Server responded with ${res.status}`);
   const result = await res.json();
@@ -257,7 +258,7 @@ export default function MockTest() {
 
   // ── Error ─────────────────────────────────────────────────────────────────
   if (phase === "error") {
-    const errUrl = `http://localhost:3000/questions?${new URLSearchParams({ ...(examId || exam?.id ? { examId: examId || exam?.id } : {}), limit: test?.questions || 20 }).toString()}`;
+    const errUrl = `${API}/exams/questions?${new URLSearchParams({ ...(examId || exam?.id ? { examId: examId || exam?.id } : {}), limit: test?.questions || 20 }).toString()}`;
     return (
       <div style={{ minHeight: "100vh", background: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, padding: "20px 16px" }}>
         <div style={{ fontSize: 44 }}>⚠️</div>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+const API = import.meta.env.VITE_API;
 async function fetchExam(examId) {
-  const res = await fetch(`http://localhost:3000/exams/${examId}`);
+const res = await fetch(`${API}/exams/${examId}`);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   const data = await res.json();
 
@@ -78,7 +78,7 @@ export default function TestDetail() {
         <p style={{ fontWeight: 700, color: "#0f172a", fontSize: 18 }}>Failed to load exam</p>
         <p style={{ color: "#dc2626", fontSize: 13, background: "#fef2f2", padding: "8px 16px", borderRadius: 8 }}>{error}</p>
         <p style={{ color: "#94a3b8", fontSize: 12 }}>
-          Check: <code>GET http://localhost:3000/exams/{examId}</code>
+          Check: <code>GET https://examkranti.onrender.com/exams/{examId}</code>
         </p>
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={() => navigate(-1)} style={btnGray}>← Back</button>
