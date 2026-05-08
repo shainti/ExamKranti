@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ ADD THIS
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -11,17 +12,18 @@ const CATEGORIES = [
 
 const EXAMS = {
   ssc: [
-    { name: "SSC GD Constable", tests: 320, free: 8,  tag: "Hot",  color: "red",    icon: "ti-shield-half-filled" },
+    // ✅ RENAMED
+    { id: "ssc-gd",    name: "SSC All in One Test",   tests: 320, free: 8,  tag: "Hot",  color: "red",    icon: "ti-shield-half-filled" },
   ],
   defence: [
-    { name: "BSF HCF",    tests: 195, free: 7,  tag: "New",  color: "green",  icon: "ti-shield-star" },
-    { name: "CRPF Constable",  tests: 175, free: 6,  tag: null,   color: "blue",   icon: "ti-shield-half-filled" },
+    { id: "bsf-hcf",   name: "BSF HCF",           tests: 195, free: 7,  tag: "New",  color: "green",  icon: "ti-shield-star", comingSoon: true },
+    { id: "crpf",      name: "CRPF Constable",     tests: 175, free: 6,  tag: null,   color: "blue",   icon: "ti-shield-half-filled", comingSoon: true },
   ],
   state: [
-    { name: "JOAIT",  tests: 140, free: 5,  tag: "Hot",  color: "orange", icon: "ti-map-pin" },
+    { id: "joait",     name: "JOAIT",               tests: 140, free: 5,  tag: "Hot",  color: "orange", icon: "ti-map-pin", comingSoon: true },
   ],
   police: [
-    { name: "Himachal Police", tests: 110, free: 4,  tag: "New",  color: "purple", icon: "ti-shield-check" },
+    { id: "hp-police", name: "Himachal Police",    tests: 110, free: 4,  tag: "New",  color: "purple", icon: "ti-shield-check", comingSoon: true },
   ],
 };
 
@@ -38,13 +40,11 @@ const COLOR_MAP = {
   purple: { bg: "bg-purple-50",  icon: "text-purple-500",  border: "border-purple-100" },
 };
 
-// ─── Stat config (target number + suffix) ─────────────────────────────────────
-
 const STATS = [
-  { target: 240000, suffix: "L+",  display: (n) => (n / 100000).toFixed(1),  label: "Students",          icon: "ti-users" },
-  { target: 800,    suffix: "+",   display: (n) => Math.round(n),              label: "Mock Tests",        icon: "ti-clipboard-list" },
-  { target: 4,      suffix: "+",   display: (n) => Math.round(n),              label: "Exam Categories",   icon: "ti-certificate" },
-  { target: 99,     suffix: "%",   display: (n) => Math.round(n),              label: "Accuracy",          icon: "ti-target" },
+  { target: 240000, suffix: "L+",  display: (n) => (n / 100000).toFixed(1),  label: "Students",         icon: "ti-users" },
+  { target: 800,    suffix: "+",   display: (n) => Math.round(n),              label: "Mock Tests",      icon: "ti-clipboard-list" },
+  { target: 4,      suffix: "+",   display: (n) => Math.round(n),              label: "Exam Categories", icon: "ti-certificate" },
+  { target: 99,     suffix: "%",   display: (n) => Math.round(n),              label: "Accuracy",        icon: "ti-target" },
 ];
 
 // ─── useCountUp hook ──────────────────────────────────────────────────────────
@@ -56,16 +56,13 @@ function useCountUp(target, duration = 1800, start = false) {
   useEffect(() => {
     if (!start) return;
     const startTime = performance.now();
-
     const tick = (now) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.floor(eased * target));
       if (progress < 1) rafRef.current = requestAnimationFrame(tick);
     };
-
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
   }, [start, target, duration]);
@@ -108,9 +105,11 @@ function AnimatedStat({ stat, started, delay }) {
 // ─── Exam Card ────────────────────────────────────────────────────────────────
 
 const ExamCard = ({ exam }) => {
+  const navigate = useNavigate(); // ✅ SAME AS YOUR CODE
   const c = COLOR_MAP[exam.color] || COLOR_MAP.blue;
+
   return (
-    <div className="group relative bg-white border border-gray-100 hover:border-blue-200 rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 flex flex-col">
+    <div className={`group relative bg-white border border-gray-100 rounded-2xl p-5 flex flex-col transition-all duration-200 ${exam.comingSoon ? 'opacity-60' : 'hover:border-blue-200 cursor-pointer hover:shadow-lg hover:-translate-y-0.5'}`}>
       {exam.tag && (
         <span className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full font-grotesk ${TAG_STYLES[exam.tag]}`}>
           {exam.tag}
@@ -132,8 +131,16 @@ const ExamCard = ({ exam }) => {
           {exam.free} Free
         </span>
       </div>
-      <button className="w-full text-xs font-semibold font-grotesk text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-100 hover:border-blue-600 rounded-xl py-2 transition-all duration-150">
-        Start Test →
+
+      <button
+        onClick={() => !exam.comingSoon && navigate(`/test/${exam.id}`)}
+        className={`w-full text-xs font-semibold font-grotesk py-2 rounded-xl transition-all duration-150 border ${
+          exam.comingSoon 
+          ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed pointer-events-none" 
+          : "text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white border-blue-100 hover:border-blue-600"
+        }`}
+      >
+        {exam.comingSoon ? "Coming Soon" : "Start Test →"}
       </button>
     </div>
   );
@@ -146,7 +153,6 @@ export default function HeroSection() {
   const [searchQuery,    setSearchQuery]    = useState("");
   const [animStarted,    setAnimStarted]    = useState(false);
 
-  // Trigger animation shortly after mount
   useEffect(() => {
     const t = setTimeout(() => setAnimStarted(true), 200);
     return () => clearTimeout(t);
@@ -162,7 +168,7 @@ export default function HeroSection() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@600;700&display=swap');
         @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
-        .font-sora    { font-family: 'Sora', sans-serif; }
+        .font-sora     { font-family: 'Sora', sans-serif; }
         .font-grotesk { font-family: 'Space Grotesk', sans-serif; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -188,7 +194,7 @@ export default function HeroSection() {
                 <span className="text-blue-200">Crack Any Exam.</span>
               </h1>
               <p className="font-grotesk text-blue-100 text-sm md:text-base leading-relaxed mb-7 max-w-lg">
-                Full-length mock tests for SSC GD, BSF HCF, CRPF, JKAIT, Himachal Police &amp; more —
+                Full-length mock tests for SSC All in One Test &amp; more —
                 with instant All India Rank &amp; deep performance analysis.
               </p>
 
@@ -210,7 +216,7 @@ export default function HeroSection() {
               {/* Quick pills */}
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="font-grotesk text-xs text-blue-200 self-center">Popular:</span>
-                {["SSC GD", "BSF HCF", "CRPF", "JOAIT", "Himachal Police"].map(tag => (
+                {["SSC All in One"].map(tag => (
                   <button
                     key={tag}
                     onClick={() => setSearchQuery(tag)}
@@ -240,7 +246,6 @@ export default function HeroSection() {
       {/* ── Mock Test Section ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        {/* Heading */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="font-sora text-2xl font-bold text-gray-900">Mock Test Series</h2>
@@ -271,7 +276,6 @@ export default function HeroSection() {
           ))}
         </div>
 
-        {/* Result info */}
         {searchQuery && (
           <p className="font-grotesk text-sm text-gray-500 mb-4">
             Showing <span className="font-semibold text-gray-800">{filteredExams.length}</span> result{filteredExams.length !== 1 ? "s" : ""} for{" "}
@@ -279,7 +283,6 @@ export default function HeroSection() {
           </p>
         )}
 
-        {/* Cards */}
         {filteredExams.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filteredExams.map(exam => (
