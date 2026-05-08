@@ -5,7 +5,7 @@ import Header from "./layout/Header";
 import Hero from "./layout/Hero";
 
 import TestDetail from "./pages/TestDetails";
-import MockTest from "./pages/MockTest";
+import MockTest from "./pages/Mocktest";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Footer from "./layout/Footer";
